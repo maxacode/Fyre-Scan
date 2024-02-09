@@ -20,7 +20,7 @@ Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, E
    - SES
 - Lambda with Python to Take file and Parse it
 
-### Python Maks: 
+### Python Ajani: 
 - Create RasbPi Code to Scan
 - Upload Results to the S3 bucket
 - Log File with Results/Error
