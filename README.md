@@ -14,10 +14,10 @@ Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, E
 
 ### Backend: 
 - AWS network (File in repository)
- - S3
- - Lambda
- - DynomoDB/Aurora
- - SES
+   - S3
+   - Lambda
+   - DynomoDB/Aurora
+   - SES
 - Lambda with Python to Take file and Parse it
 
 ### Python Thorn: 
