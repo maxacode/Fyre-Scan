@@ -1,5 +1,5 @@
 # Fyre-Scan
-Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, Enriching, Intelligence and Delivery. 
+Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, Enriching, Intelligence, and Delivery. 
 
 ## Teams
 
@@ -12,7 +12,7 @@ Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, E
   - Types of Reports: Executive, Summary, Technical, etc
   
 
-### Backend: 
+### AWS Team Thorn: 
 - AWS network (File in repository)
    - S3
    - Lambda
@@ -20,13 +20,13 @@ Fyre Scan is a Vulnerability Assessment tool to automate: Scanning, Reporting, E
    - SES
 - Lambda with Python to Take file and Parse it
 
-### Python Thorn: 
+### Python Maks: 
 - Create RasbPi Code to Scan
-- Upload Results to S3 bucket
+- Upload Results to the S3 bucket
 - Log File with Results/Error
 - 
 
-### Product:
+### Product Anderson:
 - Test the individual Functionality and Full Product
 - Quality Assurance
 - Managing Collaboration between Teams
