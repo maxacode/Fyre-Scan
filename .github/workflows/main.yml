@@ -1,0 +1,26 @@
+name: Upload to AWS S3
+
+# Defines the event for the workflow. In this case, it triggers on push events to the main branch.
+on:
+  push:
+    branches:
+      - main  # Or your default branch, e.g., 'master'
+
+jobs:
+  deploy:
+    name: Deploy to S3
+    runs-on: ubuntu-latest  # Specifies the runner environment
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3  # Checks-out your repository under $GITHUB_WORKSPACE
+      with: 
+        args: -- acl public-read --follow-symlinks --delete --exclude '.github*/*'
+                # '--delete' removes files in the bucket that are not present in the source
+                # '--exclude' parameters to ignore specific files or directories
+        aws-s3-bucket: ${{secrets.AWS_ACCESS_KEY_ID }} 
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Stored in GitHub secrets
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Stored in GitHub secrets
+      
+
+   
