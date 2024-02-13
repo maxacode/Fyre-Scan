@@ -18,7 +18,7 @@ jobs:
         args: -- acl public-read --follow-symlinks --delete --exclude '.github*/*'
                 # '--delete' removes files in the bucket that are not present in the source
                 # '--exclude' parameters to ignore specific files or directories
-        aws-s3-bucket: ${{secrets.AWS_ACCESS_KEY_ID }} 
+        aws-s3-bucket: fyrescannerfrontend 
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Stored in GitHub secrets
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Stored in GitHub secrets
       
