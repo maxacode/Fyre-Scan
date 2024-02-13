@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information Saver</title>
+
+    <style>
+        /* CSS styles for the form */
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        #userInfoForm {
+            background-color: #e2e2e2;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 40px;
+        }
+
+        legend {
+            text-align: center;
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0a0a0a;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 35px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #a725a0;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <form action="#" method="POST" id="userInfoForm">
+        <!-- Form to collect user information -->
+        <legend style="text-align: center; font-weight: bold; font-family: Arial, sans-serif;">ENTER YOUR INFORMATION HERE</legend>
+        <!-- Input fields for name, email, contact number, internal IP range, and exception IPs -->
+        <label for="name">Name:</label><br>
+        <input type="text" id="nameInput" name="name" placeholder="Enter your name" required><br><br>
+
+        <label for="email">Email:</label><br>
+        <input type="email" id="emailInput" name="email" placeholder="Enter your email" required><br><br>
+
+        <label for="contact">Contact Number (10-digit format):</label><br>
+        <input type="tel" id="contactInput" name="contact" placeholder="Enter your contact number" pattern="[0-9]{10}" required><br><br>
+
+        <label for="internalIPRange">Internal IP Ranges:</label><br>
+        <input type="text" id="internalIPRangeInput" name="internalIPRange" placeholder="Enter IP Ranges (e.g. 192.168.134.234/24)" required pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}"><br><br>
+
+        <label for="exceptionIPs">Exception IPs:</label><br>
+        <input type="text" id="exceptionIPsInput" name="exceptionIPs" placeholder="Enter exception IPs (e.g. 192.168.1.1, 192.168.1.100)" required pattern="(?:\d{1,3}\.){3}\d{1,3}(?:,\s*(?:\d{1,3}\.){3}\d{1,3})*"><br><br>
+        <!-- Submit button -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // Event listener to handle form submission
+        document.getElementById('userInfoForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            // Retrieve user input values
+            var name = document.getElementById('nameInput').value;
+            var email = document.getElementById('emailInput').value;
+            var contact = document.getElementById('contactInput').value;
+            var internalIPRange = document.getElementById('internalIPRangeInput').value;
+            var exceptionIPs = document.getElementById('exceptionIPsInput').value;
+
+            // Validate internal IP range format
+            var internalIPPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/;
+            if (!internalIPPattern.test(internalIPRange)) {
+                alert("Please enter a valid internal IP range (e.g., 192.168.1.1/24)");
+                return;
+            }
+
+            // Validate exception IPs format
+            var exceptionIPsPattern = /(?:\d{1,3}\.){3}\d{1,3}(?:,\s*(?:\d{1,3}\.){3}\d{1,3})*/;
+            if (!exceptionIPsPattern.test(exceptionIPs)) {
+                alert("Please enter valid exception IPs separated by commas (e.g., 192.168.1.1, 192.168.1.100)");
+                return;
+            }
+
+
+            // Generate Client ID based on name, email and contact number
+            var clientId = generateClientId(name, email, contact);
+           
+           // Display Client ID to the user
+            alert("Your Client ID: " + clientId);
+            
+            // Function to generate Client ID
+            function generateClientId(name, email, contact) {
+                var clientIdPrefix = name.split(" ")[0] + " " + name.split(" ")[1] + contact.substring(6, 10);
+                return clientIdPrefix.trim(); // Trim to ensure not exceeding 16 characters
+            }
+            
+            // Prepare user data to save to file
+            var userData = "# User Information\n" +
+                           "name: " + name + "\n" +
+                           "email: " + email + "\n" +
+                           "contact: " + contact + "\n" +
+                           "client_id: " + clientId + "\n" +
+                           "IP_RANGES\n" +
+                           "Internal: " + internalIPRange + "\n" +
+                           "EXCEPTIONS\n" +
+                           "ips: " + exceptionIPs;
+
+            // Create a Blob containing the user data               
+            var txtBlob = new Blob([userData], { type: 'text/plain' });
+            
+            // Create a link element to trigger the download of .txt file
+            var txtLink = document.createElement('a'); 
+            txtLink.download = clientId+'user_info.txt'; // Set filename for the download
+            txtLink.href = window.URL.createObjectURL(txtBlob); // Set href to Blob URL
+            txtLink.click(); // Simulate click to trigger the download
+
+             // Saving as a .conf file
+             var userData = "# User Information\n" +
+                           "name: " + name + "\n" +
+                           "email: " + email + "\n" +
+                           "contact: " + contact + "\n" +
+                           "client_id: " + clientId + "\n" +
+                           "IP_RANGES\n" +
+                           "Internal: " + internalIPRange + "\n" +
+                           "EXCEPTIONS\n" +
+                           "ips: " + exceptionIPs;
+            // Create a Blob containing the user data                
+            var txtBlob = new Blob([userData], { type: 'text/plain' })
+            // Create a link element to trigger the download of .conf file;
+            var txtLink = document.createElement('a');
+            txtLink.download = clientId+'user_info.conf'; // Set filename for the download
+            txtLink.href = window.URL.createObjectURL(txtBlob); // Set href to Blob URL
+            txtLink.click(); // Simulate click to trigger the download
+
+              // Clean up by revoking the Blob URL
+              window.URL.revokeObjectURL(txtLink.href);
+        });
+
+    </script>
+</body>
+</html>
 
