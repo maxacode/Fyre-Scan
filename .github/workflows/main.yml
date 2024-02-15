@@ -1,0 +1,36 @@
+name: Upload to AWS S3
+
+# Defines the event for the workflow. In this case, it triggers on push events to the main branch.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to S3
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2  # Use a specific version like 'v2' instead of 'main'
+
+    # Configure AWS Credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # specify your AWS region, e.g., us-east-1
+
+    # List content of the source Directory 
+    - name: List contents of the source directory
+      run: ls -alh ${{ github.workspace }}/FrontendCode
+
+    # Deploy to S3
+    - name: Deploy to S3
+      run: |
+        aws s3 sync $SOURCE_DIR s3://$AWS_S3_BUCKET --follow-symlinks --delete --exclude '.github*/*'
+      env:
+        AWS_S3_BUCKET: fyrescannerfrontend
+        SOURCE_DIR: ${{ github.workspace }}/FrontendCode
