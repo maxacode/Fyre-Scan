@@ -1,16 +1,25 @@
-import nmap
-import configparser
-import re
-from tqdm import tqdm
+import nmap  # Import Nmap library
+import configparser  # Import configparser library
+import re  # Import re library
+from tqdm import tqdm  # Import tqdm library
+from datetime import datetime  # Import datetime library
+import subprocess  # Import subprocess library
 
 def read_config_file(file_path):
+    """
+    Read the configuration file and return IP ranges, exceptions, and company name.
+    """
     config = configparser.ConfigParser()
     config.read(file_path)
     ip_ranges = config['IP_RANGES']
     exceptions = config['EXCEPTIONS']
-    return ip_ranges, exceptions
+    company_name = config.get('User Information', 'company_name', fallback=None)
+    return ip_ranges, exceptions, company_name
 
 def discover_hosts(ip_ranges):
+    """
+    Discover hosts using Nmap and return a dictionary of discovered hosts.
+    """
     nm = nmap.PortScanner()
     discovered_hosts = {}
     for key, value in tqdm(ip_ranges.items(), desc="Discovering Hosts"):
@@ -19,10 +28,16 @@ def discover_hosts(ip_ranges):
             discovered_hosts[host] = nm[host]['status']['state']
     return discovered_hosts
 
-def scan_services(discovered_hosts, exceptions, output_file):
+def scan_services(discovered_hosts, exceptions, output_file, company_name):
+    """
+    Scan services on discovered hosts and write the results to a file.
+    """
     nm = nmap.PortScanner()
 
     with open(output_file, 'w') as f:
+        # Write company name to the file
+        f.write(f"# Company Name: {company_name}\n\n")
+
         pbar = tqdm(total=len(discovered_hosts), desc="Scanning Services")
 
         # Write table headers
@@ -59,7 +74,15 @@ def scan_services(discovered_hosts, exceptions, output_file):
 
 if __name__ == "__main__":
     config_file_path = "config.conf"
-    output_file = "scan_results.md"
-    ip_ranges, exceptions = read_config_file(config_file_path)
+
+    # Generate output file name with current date and time
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_file = f"{current_datetime}.txt"
+
+    ip_ranges, exceptions, company_name = read_config_file(config_file_path)
     discovered_hosts = discover_hosts(ip_ranges)
-    scan_services(discovered_hosts, exceptions, output_file)
+    scan_services(discovered_hosts, exceptions, output_file, company_name)
+
+    # After the scan, pass the output file as an argument to another program
+    commandr = ["python3", "push-to-s3.py", output_file, company_name]
+    subprocess.run(commandr)
