@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information Saver</title>
+
+    <style>
+        /* CSS styles for the form */
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        #userInfoForm {
+            background-color: #e2e2e2;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 40px;
+        }
+
+        legend {
+            text-align: center;
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0a0a0a;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 35px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #a725a0;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <form action="#" method="POST" id="userInfoForm">
+        <!-- Form to collect user information -->
+        <legend style="text-align: center; font-weight: bold; font-family: Arial, sans-serif;">ENTER YOUR INFORMATION HERE</legend>
+        <!-- Input fields for name, email, contact number, internal IP range, and exception IPs -->
+        <label for="name">Name:</label><br>
+        <input type="text" id="nameInput" name="name" placeholder="Enter your name" required><br><br>
+
+        <label for="email">Email:</label><br>
+        <input type="email" id="emailInput" name="email" placeholder="Enter your email" required><br><br>
+
+        <label for="contact">Contact Number (10-digit format):</label><br>
+        <input type="tel" id="contactInput" name="contact" placeholder="Enter your contact number" pattern="[0-9]{10}" required><br><br>
+
+        <label for="internalIPRange">Internal IP Ranges:</label><br>
+        <input type="text" id="internalIPRangeInput" name="internalIPRange" placeholder="Enter IP Ranges (e.g. 192.168.134.234/24)" required pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}"><br><br>
+
+        <label for="exceptionIPs">Exception IPs:</label><br>
+        <input type="text" id="exceptionIPsInput" name="exceptionIPs" placeholder="Enter exception IPs (e.g. 192.168.1.1, 192.168.1.100)" required pattern="(?:\d{1,3}\.){3}\d{1,3}(?:,\s*(?:\d{1,3}\.){3}\d{1,3})*"><br><br>
+        <!-- Submit button -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1108.0/aws-sdk.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize AWS Cognito
+            AWS.config.region = 'us-east-1'; // Replace with your Cognito region
+            AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: 'YOUR_IDENTITY_POOL_ID'
+            });
+
+            // Event listener to handle form submission
+            $('#userInfoForm').submit(function(event) {
+                event.preventDefault(); // Prevent form submission
+                
+                // Retrieve user input values
+                var name = $('#nameInput').val();
+                var email = $('#emailInput').val();
+                var contact = $('#contactInput').val();
+                var internalIPRange = $('#internalIPRangeInput').val();
+                var exceptionIPs = $('#exceptionIPsInput').val();
+
+                // Generate Client ID based on name, email, and contact number
+                var clientId = generateClientId(name, email, contact);
+
+                // Prepare user data
+                var userData = "# User Information\n" +
+                               "name: " + name + "\n" +
+                               "email: " + email + "\n" +
+                               "contact: " + contact + "\n" +
+                               "client_id: " + clientId + "\n" +
+                               "IP_RANGES\n" +
+                               "Internal: " + internalIPRange + "\n" +
+                               "EXCEPTIONS\n" +
+                               "ips: " + exceptionIPs;
+
+                // Save as .txt file
+                saveToS3(clientId + 'user_info.txt', userData, 'text/plain');
+
+                // Save as .conf file
+                saveToS3(clientId + 'user_info.conf', userData, 'text/plain');
+            });
+        });
+
+        // Function to generate Client ID
+        function generateClientId(name, email, contact) {
+            var clientIdPrefix = name.split(" ")[0] + " " + name.split(" ")[1] + contact.substring(6, 10);
+            return clientIdPrefix.trim(); // Trim to ensure not exceeding 16 characters
+        }
+
+        // Function to save data to S3
+        function saveToS3(filename, data, contentType) {
+            AWS.config.credentials.get(function(err) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+
+                var s3 = new AWS.S3();
+                var params = {
+                    Bucket: 'fyrescannerfrontend', // Replace with your S3 bucket name
+                    Key: 'user_info/' + filename,
+                    Body: data,
+                    ContentType: contentType
+                };
+
+                s3.putObject(params, function(err, data) {
+                    if (err) {
+                        console.log(err, err.stack);
+                    } else {
+                        console.log('File uploaded successfully');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+<!--
+In this code:
+
+Replace 'YOUR_IDENTITY_POOL_ID' with the Identity Pool ID from your AWS Cognito setup.
+Ensure that the IAM role associated with the Identity Pool has the necessary permissions to access the S3 bucket.
+This code uses jQuery for DOM manipulation and AWS SDK for JavaScript to interact with AWS services.
+AWS Cognito is used to obtain temporary credentials, which are then used to interact with AWS S3.
+The saveToS3 function is called to upload the user data to the specified S3 bucket.
+By using AWS Cognito and temporary credentials, you can securely manage access to AWS services 
+without exposing sensitive credentials in client-side code.
+
+-->
