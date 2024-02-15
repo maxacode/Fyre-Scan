@@ -26,7 +26,7 @@ jobs:
     # Deploy to S3
     - name: Deploy to S3
       run: |
-        aws s3 sync ${{ github.workspace }}/FrontendCode s3://fyrescannerfrontend --acl public-read --follow-symlinks --delete --exclude '.github*/*'
+        aws s3 sync $SOURCE_DIR s3://$AWS_S3_BUCKET --acl public-read --follow-symlinks --delete --exclude '.github*/*'
       env:
         AWS_S3_BUCKET: fyrescannerfrontend
-        SOURCE_DIR: 'FrontendCode'  # This environment variable is not necessary unless used in the script
+        SOURCE_DIR: ${{ github.workspace }}/FrontendCode
